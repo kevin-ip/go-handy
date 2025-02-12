@@ -141,5 +141,5 @@ func worker[X any, Y any](
 }
 
 func Foo() int {
-	return 3
+	return 4
 }
