@@ -9,7 +9,6 @@ on:
     - '*.go'
     - '.github/workflows/go-tests.yaml'
   pull_request:
-    types: [opened, synchronize]
     paths:
     - 'go.mod'
     - 'go.sum'
