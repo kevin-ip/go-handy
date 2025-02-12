@@ -80,12 +80,9 @@ func TestConcurrentMap(t *testing.T) {
 		isRunningChan := make(chan interface{}, len(inputs))
 
 		go func() {
-			for {
-				select {
-				case <-isRunningChan:
-					cancel()
-					return
-				}
+			for range isRunningChan {
+				cancel()
+				return
 			}
 		}()
 

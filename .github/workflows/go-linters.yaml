@@ -1,0 +1,40 @@
+name: Go Linters
+on:
+  push:
+    branches:
+    - main
+    paths:
+    - 'go.mod'
+    - 'go.sum'
+    - '**/*.go'
+    - '.github/workflows/go-tests.yaml'
+  pull_request:
+    types: [opened, synchronize]
+    paths:
+    - 'go.mod'
+    - 'go.sum'
+    - '**/*.go'
+    - '.github/workflows/go-tests.yaml'
+
+concurrency:
+  group: go-linters-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout build environment
+      uses: actions/checkout@v4
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version-file: 'go.mod'
+    - name: golangci-lint
+      uses: golangci/golangci-lint-action@v6
+      with:
+        version: v1.64.2
