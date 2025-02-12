@@ -139,3 +139,7 @@ func worker[X any, Y any](
 		}
 	}
 }
+
+func Foo() int {
+	return 1
+}
