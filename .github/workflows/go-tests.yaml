@@ -6,13 +6,14 @@ on:
     paths:
     - 'go.mod'
     - 'go.sum'
-    - '*.go'
+    - '**/*.go'
     - '.github/workflows/go-tests.yaml'
   pull_request:
+    types: [opened, synchronize]
     paths:
     - 'go.mod'
     - 'go.sum'
-    - '*.go'
+    - '**/*.go'
     - '.github/workflows/go-tests.yaml'
 
 concurrency:
