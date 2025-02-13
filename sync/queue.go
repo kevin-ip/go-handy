@@ -77,6 +77,7 @@ func (q *ConcurrentQueue[X]) front(deque *collection.Deque[X], lock *sync.RWMute
 // Back views the last element of the queue
 // a zero value and a false if the queue is empty
 func (q *ConcurrentQueue[X]) Back() (X, bool) {
+	// check the inDeque first as new element enqueues there
 	x, ok := q.back(&q.inDeque, &q.inLock)
 	if ok {
 		return x, true
@@ -90,6 +91,7 @@ func (q *ConcurrentQueue[X]) back(deque *collection.Deque[X], lock *sync.RWMutex
 	return deque.Back()
 }
 
+// Empty returns true if the queue has zero element
 func (q *ConcurrentQueue[X]) Empty() bool {
 	q.inLock.RLock()
 	defer q.inLock.RUnlock()
@@ -107,7 +109,7 @@ func (q *ConcurrentQueue[X]) Size() int {
 	return q.inDeque.Size() + q.outDeque.Size()
 }
 
-// Clear resets the ConcurrentQueue by clearing both deques.
+// Clear resets the queue.
 func (q *ConcurrentQueue[X]) Clear() {
 	q.inLock.Lock()
 	defer q.inLock.Unlock()
@@ -130,7 +132,7 @@ func (q *ConcurrentQueue[X]) Contains(x X) bool {
 	return q.outDeque.Contains(x)
 }
 
-// Reverse reverses the deque
+// Reverse reverses the queue
 func (q *ConcurrentQueue[X]) Reverse() {
 	// acquiring both inLock and outLock to ensure
 	// no write operation is interfering the reverse
@@ -161,6 +163,7 @@ func (q *ConcurrentQueue[X]) ToSlice() []X {
 }
 
 // IndexOf finds the index of the first occurrence of an element in the queue.
+// returns the index of the element and a boolean of its existence
 func (q *ConcurrentQueue[X]) IndexOf(x X) (int, bool) {
 	q.fillOutDeque()
 
