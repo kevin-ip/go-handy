@@ -1,4 +1,4 @@
-package datastructures
+package collection
 
 import (
 	"testing"
@@ -52,8 +52,8 @@ func TestPushAddsElementToStackQueue(t *testing.T) {
 	val := 42
 	stack.Push(val)
 
-	require.False(t, stack.Empty(), "StackQueue should not be empty after a push")
-	require.Equal(t, 1, stack.Size(), "StackQueue size should be 1 after one push")
+	require.False(t, stack.Empty(), "Deque should not be empty after a push")
+	require.Equal(t, 1, stack.Size(), "Deque size should be 1 after one push")
 
 	peekVal, ok := stack.Peek()
 	require.True(t, ok, "Peek should return true for non-empty stackQueue")
@@ -65,8 +65,8 @@ func TestEnqueueAddsElementToStackQueue(t *testing.T) {
 	val := 42
 	stack.Enqueue(val)
 
-	require.False(t, stack.Empty(), "StackQueue should not be empty after an enqueue")
-	require.Equal(t, 1, stack.Size(), "StackQueue size should be 1 after one enqueue")
+	require.False(t, stack.Empty(), "Deque should not be empty after an enqueue")
+	require.Equal(t, 1, stack.Size(), "Deque size should be 1 after one enqueue")
 
 	peekVal, ok := stack.Peek()
 	require.True(t, ok, "Peek should return true for non-empty stackQueue")
@@ -82,7 +82,7 @@ func TestPopRemovesElementFromStackQueue(t *testing.T) {
 	poppedVal, ok := stack.Pop()
 	require.True(t, ok, "Pop should return true for non-empty stackQueue")
 	require.Equal(t, val2, poppedVal, "Pop should return the last pushed value")
-	require.Equal(t, 1, stack.Size(), "StackQueue size should be 1 after one pop")
+	require.Equal(t, 1, stack.Size(), "Deque size should be 1 after one pop")
 
 	peekVal, ok := stack.Peek()
 	require.True(t, ok, "Peek should return true for non-empty stackQueue")
@@ -98,7 +98,7 @@ func TestDequeueRemovesElementFromStackQueue(t *testing.T) {
 	dequeuedVal, ok := stack.Dequeue()
 	require.True(t, ok, "Dequeue should return true for non-empty stackQueue")
 	require.Equal(t, val1, dequeuedVal, "Dequeue should return the first enqueued value")
-	require.Equal(t, 1, stack.Size(), "StackQueue size should be 1 after one dequeue")
+	require.Equal(t, 1, stack.Size(), "Deque size should be 1 after one dequeue")
 
 	peekVal, ok := stack.Peek()
 	require.True(t, ok, "Peek should return true for non-empty stackQueue")
@@ -111,8 +111,8 @@ func TestClearStackQueue(t *testing.T) {
 	stack.Push(2)
 	stack.Clear()
 
-	require.True(t, stack.Empty(), "StackQueue should be empty after Clear()")
-	require.Equal(t, 0, stack.Size(), "StackQueue size should be 0 after Clear()")
+	require.True(t, stack.Empty(), "Deque should be empty after Clear()")
+	require.Equal(t, 0, stack.Size(), "Deque size should be 0 after Clear()")
 }
 
 func TestContainsElement(t *testing.T) {
@@ -120,8 +120,8 @@ func TestContainsElement(t *testing.T) {
 	stack.Push(1)
 	stack.Push(2)
 
-	require.True(t, stack.Contains(1), "StackQueue should contain the element 1")
-	require.False(t, stack.Contains(3), "StackQueue should not contain the element 3")
+	require.True(t, stack.Contains(1), "Deque should contain the element 1")
+	require.False(t, stack.Contains(3), "Deque should not contain the element 3")
 }
 
 func TestIndexOfElement(t *testing.T) {
@@ -131,11 +131,11 @@ func TestIndexOfElement(t *testing.T) {
 	stack.Push(3)
 
 	index, ok := stack.IndexOf(2)
-	require.True(t, ok, "StackQueue should contain the element 2")
+	require.True(t, ok, "Deque should contain the element 2")
 	require.Equal(t, 1, index, "IndexOf should return the correct index for element 2")
 
 	index, ok = stack.IndexOf(4)
-	require.False(t, ok, "StackQueue should not contain the element 4")
+	require.False(t, ok, "Deque should not contain the element 4")
 	require.Equal(t, -1, index, "IndexOf should return -1 for element 4")
 }
 
@@ -202,7 +202,7 @@ func TestRemoveAt(t *testing.T) {
 		require.True(t, ok, "RemoveAt should return true for valid index")
 		require.Equal(t, 1, removedVal, "RemoveAt should return the correct value")
 
-		require.Equal(t, 2, stack.Size(), "StackQueue size should be 2 after RemoveAt")
+		require.Equal(t, 2, stack.Size(), "Deque size should be 2 after RemoveAt")
 		require.Equal(t, []int{0, 2}, stack.ToSlice(), "RemoveAt should remove the correct element")
 	})
 
