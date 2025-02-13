@@ -45,6 +45,12 @@ func TestNewDeque(t *testing.T) {
 		require.False(t, ok, "Back on empty deque should return false")
 		require.Equal(t, 0, backVal, "Back on empty deque should return zero value for int")
 	})
+
+	t.Run("Reverse on deque do nothing", func(t *testing.T) {
+		deque.Reverse()
+		actual := deque.ToSlice()
+		require.Len(t, actual, 0, "Reverse on deque do nothing")
+	})
 }
 
 func TestPushAddsElementToDeque(t *testing.T) {
@@ -140,17 +146,31 @@ func TestIndexOfElement(t *testing.T) {
 }
 
 func TestReverseDeque(t *testing.T) {
-	deque := NewDeque[int]()
-	deque.Push(1)
-	deque.Push(2)
-	deque.Push(3)
+	t.Run("Reverse with odd number of elements", func(t *testing.T) {
+		deque := NewDeque[int]()
+		for i := 0; i < 3; i++ {
+			deque.Push(i)
+		}
 
-	deque.Reverse()
+		deque.Reverse()
 
-	// Check if the order is reversed
-	peekVal, ok := deque.Peek()
-	require.True(t, ok, "Peek should return true for non-empty deque")
-	require.Equal(t, 1, peekVal, "Peek should return the first pushed value after Reverse()")
+		// Check if the order is reversed
+		actual := deque.ToSlice()
+		require.EqualValues(t, []int{2, 1, 0}, actual, "Deque should return reversed elements")
+	})
+
+	t.Run("Reverse with even number of elements", func(t *testing.T) {
+		deque := NewDeque[int]()
+		for i := 0; i < 4; i++ {
+			deque.Push(i)
+		}
+
+		deque.Reverse()
+
+		// Check if the order is reversed
+		actual := deque.ToSlice()
+		require.EqualValues(t, []int{3, 2, 1, 0}, actual, "Deque should return reversed elements")
+	})
 }
 
 func TestToSlice(t *testing.T) {
@@ -162,7 +182,7 @@ func TestToSlice(t *testing.T) {
 	require.Equal(t, []int{1, 2}, slice, "ToSlice should return a copy of the data")
 }
 
-func TestTopAlias(t *testing.T) {
+func TestTop(t *testing.T) {
 	deque := NewDeque[int]()
 	deque.Push(1)
 
