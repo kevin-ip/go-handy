@@ -5,19 +5,19 @@ type Deque[X comparable] struct {
 	data []X
 }
 
-// NewDeque creates a new stackqueue
+// NewDeque creates a new deque
 func NewDeque[X comparable]() *Deque[X] {
 	return &Deque[X]{}
 }
 
 // Stack specifics
 
-// Push adds an element to the top of the stackqueue
+// Push adds an element to the top of the deque
 func (s *Deque[X]) Push(x X) {
 	s.data = append(s.data, x)
 }
 
-// Pop removes the top element from the stackqueue
+// Pop removes the top element from the deque
 func (s *Deque[X]) Pop() (X, bool) {
 	if len(s.data) == 0 {
 		var zero X
@@ -28,7 +28,7 @@ func (s *Deque[X]) Pop() (X, bool) {
 	return x, true
 }
 
-// Peek views the top element from the stackqueue
+// Peek views the top element from the deque
 func (s *Deque[X]) Peek() (X, bool) {
 	if len(s.data) == 0 {
 		var zero X
@@ -38,7 +38,7 @@ func (s *Deque[X]) Peek() (X, bool) {
 	return x, true
 }
 
-// Top views the top element from the stackqueue
+// Top views the top element from the deque
 // This is an alias for Peek but provides semantic clarity for stack
 // use cases.
 func (s *Deque[X]) Top() (X, bool) {
@@ -47,12 +47,12 @@ func (s *Deque[X]) Top() (X, bool) {
 
 // Queue specifics
 
-// Enqueue adds an element to the end of the stackqueue
+// Enqueue adds an element to the end of the deque
 func (s *Deque[X]) Enqueue(x X) {
 	s.data = append(s.data, x)
 }
 
-// Dequeue removes an element from the front of the stackqueue
+// Dequeue removes an element from the front of the deque
 func (s *Deque[X]) Dequeue() (X, bool) {
 	if len(s.data) == 0 {
 		var zero X
@@ -63,7 +63,7 @@ func (s *Deque[X]) Dequeue() (X, bool) {
 	return x, true
 }
 
-// Front views the first element of the stackqueue
+// Front views the first element of the deque
 func (s *Deque[X]) Front() (X, bool) {
 	if len(s.data) == 0 {
 		var zero X
@@ -72,29 +72,29 @@ func (s *Deque[X]) Front() (X, bool) {
 	return s.data[0], true
 }
 
-// Front views the last element of the stackqueue
+// Front views the last element of the deque
 func (s *Deque[X]) Back() (X, bool) {
 	return s.Peek()
 }
 
 // Others
 
-// Empty returns if the stackqueue has at least one element
+// Empty returns if the deque has at least one element
 func (s *Deque[X]) Empty() bool {
 	return len(s.data) == 0
 }
 
-// Size returns the total elements in the stackqueue
+// Size returns the total elements in the deque
 func (s *Deque[X]) Size() int {
 	return len(s.data)
 }
 
-// Clear removes all elements from the stackqueue
+// Clear removes all elements from the deque
 func (s *Deque[X]) Clear() {
 	s.data = nil
 }
 
-// Contains checks if the element exists in the stackqueue
+// Contains checks if the element exists in the deque
 func (s *Deque[X]) Contains(x X) bool {
 	for _, v := range s.data {
 		if v == x {
@@ -104,7 +104,7 @@ func (s *Deque[X]) Contains(x X) bool {
 	return false
 }
 
-// Reverse reverses the stackqueue
+// Reverse reverses the deque
 func (s *Deque[X]) Reverse() {
 	for i, j := 0, len(s.data)-1; i < j; i, j = i+1, j-1 {
 		s.data[i], s.data[j] = s.data[j], s.data[i]
