@@ -5,8 +5,8 @@ type Deque[X comparable] struct {
 	data []X
 }
 
-// NewStackQueue creates a new stackqueue
-func NewStackQueue[X comparable]() *Deque[X] {
+// NewDeque creates a new stackqueue
+func NewDeque[X comparable]() *Deque[X] {
 	return &Deque[X]{}
 }
 
