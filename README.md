@@ -1,6 +1,6 @@
 # go-handy
 
-Handy functions in golang
+Handy functions and collections in golang
 
 ## Development
 
