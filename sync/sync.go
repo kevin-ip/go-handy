@@ -7,6 +7,7 @@ import (
 	"sync"
 )
 
+// FanOut spawns a fixed number of workers to process tasks concurrently
 func FanOut[X any, Y any](
 	ctx context.Context,
 	tasks <-chan X,
