@@ -80,6 +80,88 @@ func TestFanOut(t *testing.T) {
 	})
 }
 
+func TestFanIn(t *testing.T) {
+	t.Run("fan-in should merge multiple channels into one", func(t *testing.T) {
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		channels := make([]chan int, 10)
+		for i := range channels {
+			channels[i] = make(chan int)
+		}
+
+		// Start sending data to each channel
+		for i, channel := range channels {
+			go func(ch chan int, id int) {
+				defer close(ch)
+				for j := 0; j < i; j++ {
+					ch <- j
+				}
+			}(channel, i)
+		}
+
+		readOnlyChannels := make([]<-chan int, len(channels))
+		for i, channel := range channels {
+			readOnlyChannels[i] = channel
+		}
+
+		outChan := FanIn[int](ctx, readOnlyChannels...)
+
+		result := 0
+		for out := range outChan {
+			result = result + out
+		}
+		require.Equal(t, 120, result)
+	})
+
+	t.Run("context cancel before running should stop the operation", func(t *testing.T) {
+		ctx, cancel := context.WithCancel(context.Background())
+		// Cancel immediately
+		cancel()
+
+		channels := make([]chan int, 10)
+		for i := range channels {
+			channels[i] = make(chan int)
+		}
+
+		// Start sending data to each channel
+		for i, channel := range channels {
+			go func(ch chan int, id int) {
+				defer close(ch)
+				for j := 0; j < i; j++ {
+					ch <- j
+				}
+			}(channel, i)
+		}
+
+		readOnlyChannels := make([]<-chan int, len(channels))
+		for i, channel := range channels {
+			readOnlyChannels[i] = channel
+		}
+
+		outChan := FanIn[int](ctx, readOnlyChannels...)
+
+		result := 0
+		for out := range outChan {
+			result = result + out
+		}
+		require.Equal(t, 0, result)
+	})
+
+	t.Run("should return if no input channel", func(t *testing.T) {
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		outChan := FanIn[int](ctx)
+
+		result := 0
+		for out := range outChan {
+			result = result + out
+		}
+		require.Equal(t, 0, result)
+	})
+}
+
 func TestConcurrentMap(t *testing.T) {
 	t.Run("concurrent multiplication should work", func(t *testing.T) {
 		ctx := context.Background()
