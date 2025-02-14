@@ -33,6 +33,38 @@ func FanOut[X any, Y any](
 	return outputChan, errorChan
 }
 
+// FanIn merges multiple input channels into a single one
+func FanIn[X any](ctx context.Context, channels ...<-chan X) <-chan X {
+	outputChan := make(chan X, len(channels))
+	wg := &sync.WaitGroup{}
+
+	for _, channel := range channels {
+		wg.Add(1)
+		go func(ch <-chan X) {
+			defer wg.Done()
+
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case val, ok := <-ch:
+					if !ok {
+						return
+					}
+					outputChan <- val
+				}
+			}
+		}(channel)
+	}
+
+	go func() {
+		wg.Wait()
+		close(outputChan)
+	}()
+
+	return outputChan
+}
+
 type concurrentMapSettings struct {
 	goRoutineCount int
 }
