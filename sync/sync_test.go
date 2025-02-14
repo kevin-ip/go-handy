@@ -26,6 +26,60 @@ func totalFailure(_ context.Context, input int) (int, error) {
 	return 0, fmt.Errorf("some-error: %v", input)
 }
 
+func TestFanOut(t *testing.T) {
+	t.Run("concurrent multiplication should work", func(t *testing.T) {
+		ctx := context.Background()
+		tasks := make(chan int, 10)
+
+		outputChan, errorChan := FanOut[int, int](ctx, tasks, 2, timesTwo)
+		go func() {
+			defer close(tasks)
+			for i := 0; i < 10; i++ {
+				tasks <- i
+			}
+		}()
+
+		result := []int{}
+		for output := range outputChan {
+			result = append(result, output)
+		}
+		sort.Ints(result)
+		require.Equal(t, []int{0, 2, 4, 6, 8, 10, 12, 14, 16, 18}, result)
+
+		errors := []error{}
+		for err := range errorChan {
+			errors = append(errors, err)
+		}
+		require.Empty(t, errors)
+	})
+
+	t.Run("concurrent multiplication with partial failiure should work", func(t *testing.T) {
+		ctx := context.Background()
+		tasks := make(chan int, 10)
+
+		outputChan, errorChan := FanOut[int, int](ctx, tasks, 2, funkyTimesTwo)
+		go func() {
+			defer close(tasks)
+			for i := 0; i < 10; i++ {
+				tasks <- i
+			}
+		}()
+
+		result := []int{}
+		for output := range outputChan {
+			result = append(result, output)
+		}
+		sort.Ints(result)
+		require.Equal(t, []int{0, 4, 8, 12, 16}, result)
+
+		errors := []error{}
+		for err := range errorChan {
+			errors = append(errors, err)
+		}
+		require.Len(t, errors, 5)
+	})
+}
+
 func TestConcurrentMap(t *testing.T) {
 	t.Run("concurrent multiplication should work", func(t *testing.T) {
 		ctx := context.Background()

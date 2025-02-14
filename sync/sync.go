@@ -7,6 +7,31 @@ import (
 	"sync"
 )
 
+func FanOut[X any, Y any](
+	ctx context.Context,
+	tasks <-chan X,
+	workers int,
+	workerFunc func(context.Context, X) (Y, error),
+) (<-chan Y, <-chan error) {
+	outputChan := make(chan Y, 10)
+	errorChan := make(chan error, 10)
+
+	wg := &sync.WaitGroup{}
+	for i := 0; i < workers; i++ {
+		wg.Add(1)
+		go worker(ctx, wg, tasks, outputChan, errorChan, workerFunc)
+	}
+
+	// Wait for all go routines to finish
+	go func() {
+		wg.Wait()
+		close(outputChan)
+		close(errorChan)
+	}()
+
+	return outputChan, errorChan
+}
+
 type concurrentMapSettings struct {
 	goRoutineCount int
 }
@@ -50,14 +75,12 @@ func ConcurrentMap[X any, Y any](
 	settings := newSettings(options)
 
 	inputChan := make(chan X, len(inputs))
-	outputChan := make(chan Y, len(inputs))
-	errorChan := make(chan error, len(inputs))
-
-	wg := &sync.WaitGroup{}
-	for i := 0; i < settings.goRoutineCount; i++ {
-		wg.Add(1)
-		go worker(ctx, wg, inputChan, outputChan, errorChan, work)
-	}
+	outputChan, errorChan := FanOut[X, Y](
+		ctx,
+		inputChan,
+		settings.goRoutineCount,
+		work,
+	)
 
 	// Send each input to the input channel
 	go func() {
@@ -70,13 +93,6 @@ func ConcurrentMap[X any, Y any](
 				inputChan <- input
 			}
 		}
-	}()
-
-	// Wait for all go routines to finish
-	go func() {
-		wg.Wait()
-		close(outputChan)
-		close(errorChan)
 	}()
 
 	result := make([]Y, 0, len(outputChan))
