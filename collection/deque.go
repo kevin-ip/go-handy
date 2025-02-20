@@ -1,138 +1,57 @@
 package collection
 
-// Deque stands for double ended queue
-type Deque[X comparable] struct {
-	data []X
-}
+type Deque[X comparable] interface {
 
-// NewDeque creates a new deque
-func NewDeque[X comparable]() *Deque[X] {
-	return &Deque[X]{}
-}
+	// Push adds an element to the top of the deque
+	Push(x X)
 
-// Stack specifics
+	// Pop removes the top element from the deque
+	Pop() (X, bool)
 
-// Push adds an element to the top of the deque
-func (s *Deque[X]) Push(x X) {
-	s.data = append(s.data, x)
-}
+	// Peek views the top element from the deque
+	Peek() (X, bool)
 
-// Pop removes the top element from the deque
-func (s *Deque[X]) Pop() (X, bool) {
-	if len(s.data) == 0 {
-		var zero X
-		return zero, false
-	}
-	x := s.data[len(s.data)-1]
-	s.data = s.data[:len(s.data)-1]
-	return x, true
-}
+	// Top views the top element from the deque
+	// This is an alias for Peek but provides semantic clarity for stack
+	// use cases.
+	Top() (X, bool)
 
-// Peek views the top element from the deque
-func (s *Deque[X]) Peek() (X, bool) {
-	if len(s.data) == 0 {
-		var zero X
-		return zero, false
-	}
-	x := s.data[len(s.data)-1]
-	return x, true
-}
+	// Queue specifics
 
-// Top views the top element from the deque
-// This is an alias for Peek but provides semantic clarity for stack
-// use cases.
-func (s *Deque[X]) Top() (X, bool) {
-	return s.Peek()
-}
+	// Enqueue adds an element to the end of the deque
+	Enqueue(x X)
 
-// Queue specifics
+	// Dequeue removes an element from the front of the deque
+	Dequeue() (X, bool)
 
-// Enqueue adds an element to the end of the deque
-func (s *Deque[X]) Enqueue(x X) {
-	s.data = append(s.data, x)
-}
+	// Front views the first element of the deque
+	Front() (X, bool)
 
-// Dequeue removes an element from the front of the deque
-func (s *Deque[X]) Dequeue() (X, bool) {
-	if len(s.data) == 0 {
-		var zero X
-		return zero, false
-	}
-	x := s.data[0]
-	s.data = s.data[1:]
-	return x, true
-}
+	// Front views the last element of the deque
+	Back() (X, bool)
 
-// Front views the first element of the deque
-func (s *Deque[X]) Front() (X, bool) {
-	if len(s.data) == 0 {
-		var zero X
-		return zero, false
-	}
-	return s.data[0], true
-}
+	// Others
 
-// Front views the last element of the deque
-func (s *Deque[X]) Back() (X, bool) {
-	return s.Peek()
-}
+	// Empty returns if the deque has at least one element
+	Empty() bool
 
-// Others
+	// Size returns the total elements in the deque
+	Size() int
 
-// Empty returns if the deque has at least one element
-func (s *Deque[X]) Empty() bool {
-	return len(s.data) == 0
-}
+	// Clear removes all elements from the deque
+	Clear()
 
-// Size returns the total elements in the deque
-func (s *Deque[X]) Size() int {
-	return len(s.data)
-}
+	// Contains checks if the element exists in the deque
+	Contains(x X) bool
 
-// Clear removes all elements from the deque
-func (s *Deque[X]) Clear() {
-	s.data = nil
-}
+	// Reverse reverses the deque
+	Reverse()
 
-// Contains checks if the element exists in the deque
-func (s *Deque[X]) Contains(x X) bool {
-	for _, v := range s.data {
-		if v == x {
-			return true
-		}
-	}
-	return false
-}
+	ToSlice() []X
 
-// Reverse reverses the deque
-func (s *Deque[X]) Reverse() {
-	for i, j := 0, len(s.data)-1; i < j; i, j = i+1, j-1 {
-		s.data[i], s.data[j] = s.data[j], s.data[i]
-	}
-}
+	// IndexOf finds the index of the first occurrence of an element in the sliceDeque.
+	IndexOf(x X) (int, bool)
 
-func (s *Deque[X]) ToSlice() []X {
-	// Return a copy to prevent mutation
-	return append([]X(nil), s.data...)
-}
-
-// IndexOf finds the index of the first occurrence of an element in the Deque.
-func (s *Deque[X]) IndexOf(x X) (int, bool) {
-	for i, v := range s.data {
-		if v == x {
-			return i, true
-		}
-	}
-	return -1, false
-}
-
-// RemoveAt removes the element at a specific index
-func (s *Deque[X]) RemoveAt(index int) (X, bool) {
-	if index < 0 || index >= len(s.data) {
-		var zero X
-		return zero, false
-	}
-	x := s.data[index]
-	s.data = append(s.data[:index], s.data[index+1:]...)
-	return x, true
+	// RemoveAt removes the element at a specific index
+	RemoveAt(index int) (X, bool)
 }

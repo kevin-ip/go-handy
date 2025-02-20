@@ -18,7 +18,10 @@ type ConcurrentQueue[X comparable] struct {
 }
 
 func NewConcurrentQueue[X comparable]() *ConcurrentQueue[X] {
-	return &ConcurrentQueue[X]{}
+	return &ConcurrentQueue[X]{
+		inDeque:  collection.NewSliceDeque[X](),
+		outDeque: collection.NewSliceDeque[X](),
+	}
 }
 
 // Enqueue adds an element to the back of the queue
@@ -61,14 +64,14 @@ func (q *ConcurrentQueue[X]) fillOutDeque() {
 // Front views the first element of the queue
 // a zero value and a false if the queue is empty
 func (q *ConcurrentQueue[X]) Front() (X, bool) {
-	x, ok := q.front(&q.outDeque, &q.outLock)
+	x, ok := q.front(q.outDeque, &q.outLock)
 	if ok {
 		return x, true
 	}
-	return q.front(&q.inDeque, &q.inLock)
+	return q.front(q.inDeque, &q.inLock)
 }
 
-func (q *ConcurrentQueue[X]) front(deque *collection.Deque[X], lock *sync.RWMutex) (X, bool) {
+func (q *ConcurrentQueue[X]) front(deque collection.Deque[X], lock *sync.RWMutex) (X, bool) {
 	lock.RLock()
 	defer lock.RUnlock()
 	return deque.Front()
@@ -78,14 +81,14 @@ func (q *ConcurrentQueue[X]) front(deque *collection.Deque[X], lock *sync.RWMute
 // a zero value and a false if the queue is empty
 func (q *ConcurrentQueue[X]) Back() (X, bool) {
 	// check the inDeque first as new element enqueues there
-	x, ok := q.back(&q.inDeque, &q.inLock)
+	x, ok := q.back(q.inDeque, &q.inLock)
 	if ok {
 		return x, true
 	}
-	return q.back(&q.outDeque, &q.outLock)
+	return q.back(q.outDeque, &q.outLock)
 }
 
-func (q *ConcurrentQueue[X]) back(deque *collection.Deque[X], lock *sync.RWMutex) (X, bool) {
+func (q *ConcurrentQueue[X]) back(deque collection.Deque[X], lock *sync.RWMutex) (X, bool) {
 	lock.RLock()
 	defer lock.RUnlock()
 	return deque.Back()
@@ -175,13 +178,13 @@ func (q *ConcurrentQueue[X]) IndexOf(x X) (int, bool) {
 // Remove removes the element from the queue
 // true if removed successfully, false otherwise
 func (q *ConcurrentQueue[X]) Remove(x X) bool {
-	if q.remove(&q.inDeque, &q.inLock, x) {
+	if q.remove(q.inDeque, &q.inLock, x) {
 		return true
 	}
-	return q.remove(&q.outDeque, &q.outLock, x)
+	return q.remove(q.outDeque, &q.outLock, x)
 }
 
-func (q *ConcurrentQueue[X]) remove(deque *collection.Deque[X], lock *sync.RWMutex, x X) bool {
+func (q *ConcurrentQueue[X]) remove(deque collection.Deque[X], lock *sync.RWMutex, x X) bool {
 	lock.Lock()
 	defer lock.Unlock()
 
