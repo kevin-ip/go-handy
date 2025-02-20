@@ -7,30 +7,33 @@ import (
 	"sync"
 )
 
+type FanOutResult[Y any] struct {
+	Result Y
+	Err    error
+}
+
 // FanOut spawns a fixed number of workers to process tasks concurrently
 func FanOut[X any, Y any](
 	ctx context.Context,
 	tasks <-chan X,
 	workers int,
 	workerFunc func(context.Context, X) (Y, error),
-) (<-chan Y, <-chan error) {
-	outputChan := make(chan Y, 10)
-	errorChan := make(chan error, 10)
+) <-chan FanOutResult[Y] {
+	resultChan := make(chan FanOutResult[Y], 10)
 
 	wg := &sync.WaitGroup{}
 	for i := 0; i < workers; i++ {
 		wg.Add(1)
-		go worker(ctx, wg, tasks, outputChan, errorChan, workerFunc)
+		go worker(ctx, wg, tasks, resultChan, workerFunc)
 	}
 
 	// Wait for all go routines to finish
 	go func() {
 		wg.Wait()
-		close(outputChan)
-		close(errorChan)
+		close(resultChan)
 	}()
 
-	return outputChan, errorChan
+	return resultChan
 }
 
 // FanIn merges multiple input channels into a single one
@@ -98,7 +101,8 @@ func (w withGoRoutineCount) Apply(settings *concurrentMapSettings) {
 // in the input. The ordering of the result list is not guaranteed
 // to be the same as the ordering of the input.
 // Partial result may be returned if some of the work are able
-// to complete successfully.
+// to complete successfully. If there is an error from one of the work,
+// the result from the work will not be included in the return value.
 func ConcurrentMap[X any, Y any](
 	ctx context.Context,
 	inputs []X,
@@ -108,7 +112,7 @@ func ConcurrentMap[X any, Y any](
 	settings := newSettings(options)
 
 	inputChan := make(chan X, len(inputs))
-	outputChan, errorChan := FanOut[X, Y](
+	resultChan := FanOut[X, Y](
 		ctx,
 		inputChan,
 		settings.goRoutineCount,
@@ -128,49 +132,39 @@ func ConcurrentMap[X any, Y any](
 		}
 	}()
 
-	result := make([]Y, 0, len(outputChan))
+	results := make([]Y, 0, len(resultChan))
+	errs := make([]error, 0, len(resultChan))
 outputLoop:
 	for {
 		select {
 		case <-ctx.Done():
 			return nil, ctx.Err()
-		case output, ok := <-outputChan:
+		case result, ok := <-resultChan:
 			// The chanel has been closed
 			if !ok {
 				break outputLoop
 			}
-			result = append(result, output)
-		}
-	}
 
-	errs := make([]error, 0, len(errorChan))
-errorLoop:
-	for {
-		select {
-		case <-ctx.Done():
-			return nil, ctx.Err()
-		case err, ok := <-errorChan:
-			// The chanel has been closed
-			if !ok {
-				break errorLoop
+			if result.Err != nil {
+				errs = append(errs, result.Err)
+			} else {
+				results = append(results, result.Result)
 			}
-			errs = append(errs, err)
 		}
 	}
 
 	if len(errs) > 0 {
 		err := errors.Join(errs...)
-		return result, err
+		return results, err
 	}
-	return result, nil
+	return results, nil
 }
 
 func worker[X any, Y any](
 	ctx context.Context,
 	wg *sync.WaitGroup,
 	inputChan <-chan X,
-	outputChan chan<- Y,
-	errorChan chan<- error,
+	resultChan chan<- FanOutResult[Y],
 	work func(context.Context, X) (Y, error),
 ) {
 	defer wg.Done()
@@ -180,11 +174,7 @@ func worker[X any, Y any](
 			return
 		default:
 			output, err := work(ctx, input)
-			if err != nil {
-				errorChan <- err
-			} else {
-				outputChan <- output
-			}
+			resultChan <- FanOutResult[Y]{Result: output, Err: err}
 		}
 	}
 }

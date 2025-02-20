@@ -31,7 +31,7 @@ func TestFanOut(t *testing.T) {
 		ctx := context.Background()
 		tasks := make(chan int, 10)
 
-		outputChan, errorChan := FanOut[int, int](ctx, tasks, 2, timesTwo)
+		responseChan := FanOut[int, int](ctx, tasks, 2, timesTwo)
 		go func() {
 			defer close(tasks)
 			for i := 0; i < 10; i++ {
@@ -39,17 +39,9 @@ func TestFanOut(t *testing.T) {
 			}
 		}()
 
-		result := []int{}
-		for output := range outputChan {
-			result = append(result, output)
-		}
+		result, errors := gatherResponse(responseChan)
 		sort.Ints(result)
 		require.Equal(t, []int{0, 2, 4, 6, 8, 10, 12, 14, 16, 18}, result)
-
-		errors := []error{}
-		for err := range errorChan {
-			errors = append(errors, err)
-		}
 		require.Empty(t, errors)
 	})
 
@@ -57,7 +49,7 @@ func TestFanOut(t *testing.T) {
 		ctx := context.Background()
 		tasks := make(chan int, 10)
 
-		outputChan, errorChan := FanOut[int, int](ctx, tasks, 2, funkyTimesTwo)
+		responseChan := FanOut[int, int](ctx, tasks, 2, funkyTimesTwo)
 		go func() {
 			defer close(tasks)
 			for i := 0; i < 10; i++ {
@@ -65,19 +57,25 @@ func TestFanOut(t *testing.T) {
 			}
 		}()
 
-		result := []int{}
-		for output := range outputChan {
-			result = append(result, output)
-		}
+		result, errors := gatherResponse(responseChan)
 		sort.Ints(result)
 		require.Equal(t, []int{0, 4, 8, 12, 16}, result)
-
-		errors := []error{}
-		for err := range errorChan {
-			errors = append(errors, err)
-		}
 		require.Len(t, errors, 5)
 	})
+}
+
+func gatherResponse(responseChan <-chan FanOutResult[int]) ([]int, []error) {
+	result := []int{}
+	errors := []error{}
+	for response := range responseChan {
+		if response.Err != nil {
+			errors = append(errors, response.Err)
+		} else {
+			result = append(result, response.Result)
+		}
+
+	}
+	return result, errors
 }
 
 func TestFanIn(t *testing.T) {
