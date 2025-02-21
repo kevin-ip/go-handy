@@ -1,15 +1,17 @@
-package collection
+package collectiontest
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
+	"github.com/kevin-ip/go-handy/collection"
 )
 
-func runDequeTests(t *testing.T, newDequeFunc func() Deque[int]) {
+func RunDequeTests(t *testing.T, newDequeFunc func() collection.Deque[int]) {
 	testCases := []struct {
 		name string
-		test func(t *testing.T, newDequeFunc func() Deque[int])
+		test func(t *testing.T, newDequeFunc func() collection.Deque[int])
 	}{
 		{"testDeque_Push", testDeque_Push},
 		{"testDeque_Enqueue", testDeque_Enqueue},
@@ -34,7 +36,7 @@ func runDequeTests(t *testing.T, newDequeFunc func() Deque[int]) {
 	}
 }
 
-func testDeque_Push(t *testing.T, newDequeFunc func() Deque[int]) {
+func testDeque_Push(t *testing.T, newDequeFunc func() collection.Deque[int]) {
 	deque := newDequeFunc()
 	val := 42
 	deque.Push(val)
@@ -47,7 +49,7 @@ func testDeque_Push(t *testing.T, newDequeFunc func() Deque[int]) {
 	require.Equal(t, val, peekVal, "Peek should return the last pushed value")
 }
 
-func testDeque_Enqueue(t *testing.T, newDequeFunc func() Deque[int]) {
+func testDeque_Enqueue(t *testing.T, newDequeFunc func() collection.Deque[int]) {
 	deque := newDequeFunc()
 	val := 42
 	deque.Enqueue(val)
@@ -60,7 +62,7 @@ func testDeque_Enqueue(t *testing.T, newDequeFunc func() Deque[int]) {
 	require.Equal(t, val, peekVal, "Peek should return the last enqueued value")
 }
 
-func testDeque_Pop(t *testing.T, newDequeFunc func() Deque[int]) {
+func testDeque_Pop(t *testing.T, newDequeFunc func() collection.Deque[int]) {
 	t.Run("pop from an empty deque should be false", func(t *testing.T) {
 		deque := newDequeFunc()
 		actual, ok := deque.Pop()
@@ -104,7 +106,7 @@ func testDeque_Pop(t *testing.T, newDequeFunc func() Deque[int]) {
 	})
 }
 
-func testDeque_Peek(t *testing.T, newDequeFunc func() Deque[int]) {
+func testDeque_Peek(t *testing.T, newDequeFunc func() collection.Deque[int]) {
 	t.Run("Peek from an empty deque should be false", func(t *testing.T) {
 		deque := newDequeFunc()
 		actual, ok := deque.Peek()
@@ -122,7 +124,7 @@ func testDeque_Peek(t *testing.T, newDequeFunc func() Deque[int]) {
 	})
 }
 
-func testDeque_Dequeue(t *testing.T, newDequeFunc func() Deque[int]) {
+func testDeque_Dequeue(t *testing.T, newDequeFunc func() collection.Deque[int]) {
 	t.Run("dequeue from an empty deque should be false", func(t *testing.T) {
 		deque := newDequeFunc()
 		actual, ok := deque.Dequeue()
@@ -165,7 +167,7 @@ func testDeque_Dequeue(t *testing.T, newDequeFunc func() Deque[int]) {
 	})
 }
 
-func testDeque_Clear(t *testing.T, newDequeFunc func() Deque[int]) {
+func testDeque_Clear(t *testing.T, newDequeFunc func() collection.Deque[int]) {
 	deque := newDequeFunc()
 	deque.Push(1)
 	deque.Push(2)
@@ -175,7 +177,7 @@ func testDeque_Clear(t *testing.T, newDequeFunc func() Deque[int]) {
 	require.Equal(t, 0, deque.Size(), "deque size should be 0 after Clear()")
 }
 
-func testDeque_Contains(t *testing.T, newDequeFunc func() Deque[int]) {
+func testDeque_Contains(t *testing.T, newDequeFunc func() collection.Deque[int]) {
 	deque := newDequeFunc()
 	deque.Push(1)
 	deque.Push(2)
@@ -184,7 +186,7 @@ func testDeque_Contains(t *testing.T, newDequeFunc func() Deque[int]) {
 	require.False(t, deque.Contains(3), "deque should not contain the element 3")
 }
 
-func testDeque_Reverse(t *testing.T, newDequeFunc func() Deque[int]) {
+func testDeque_Reverse(t *testing.T, newDequeFunc func() collection.Deque[int]) {
 	t.Run("Reverse with odd number of elements", func(t *testing.T) {
 		deque := newDequeFunc()
 		for i := 0; i < 3; i++ {
@@ -219,7 +221,7 @@ func testDeque_Reverse(t *testing.T, newDequeFunc func() Deque[int]) {
 	})
 }
 
-func testDeque_ToSlice(t *testing.T, newDequeFunc func() Deque[int]) {
+func testDeque_ToSlice(t *testing.T, newDequeFunc func() collection.Deque[int]) {
 	deque := newDequeFunc()
 	deque.Push(1)
 	deque.Push(2)
@@ -228,7 +230,7 @@ func testDeque_ToSlice(t *testing.T, newDequeFunc func() Deque[int]) {
 	require.Equal(t, []int{1, 2}, slice, "ToSlice should return a copy of the data")
 }
 
-func testDeque_Top(t *testing.T, newDequeFunc func() Deque[int]) {
+func testDeque_Top(t *testing.T, newDequeFunc func() collection.Deque[int]) {
 	deque := newDequeFunc()
 	deque.Push(1)
 
@@ -237,7 +239,7 @@ func testDeque_Top(t *testing.T, newDequeFunc func() Deque[int]) {
 	require.Equal(t, 1, topVal, "Top should return the last pushed value")
 }
 
-func testDeque_Front(t *testing.T, newDequeFunc func() Deque[int]) {
+func testDeque_Front(t *testing.T, newDequeFunc func() collection.Deque[int]) {
 	t.Run("front from an empty deque should return false", func(t *testing.T) {
 		deque := newDequeFunc()
 		frontVal, ok := deque.Front()
@@ -256,7 +258,7 @@ func testDeque_Front(t *testing.T, newDequeFunc func() Deque[int]) {
 	})
 }
 
-func testDeque_Back(t *testing.T, newDequeFunc func() Deque[int]) {
+func testDeque_Back(t *testing.T, newDequeFunc func() collection.Deque[int]) {
 	t.Run("back from an empty deque should return false", func(t *testing.T) {
 		deque := newDequeFunc()
 		backVal, ok := deque.Back()
@@ -275,7 +277,7 @@ func testDeque_Back(t *testing.T, newDequeFunc func() Deque[int]) {
 	})
 }
 
-func testDeque_Size(t *testing.T, newDequeFunc func() Deque[int]) {
+func testDeque_Size(t *testing.T, newDequeFunc func() collection.Deque[int]) {
 	t.Run("Size from an empty deque should be zero", func(t *testing.T) {
 		deque := newDequeFunc()
 		require.Equal(t, 0, deque.Size(), "deque size should be 0")
@@ -290,7 +292,7 @@ func testDeque_Size(t *testing.T, newDequeFunc func() Deque[int]) {
 	})
 }
 
-func testDeque_Remove(t *testing.T, newDequeFunc func() Deque[int]) {
+func testDeque_Remove(t *testing.T, newDequeFunc func() collection.Deque[int]) {
 	t.Run("Remove an existing value should be a success", func(t *testing.T) {
 		deque := newDequeFunc()
 		for i := 0; i < 3; i++ {
