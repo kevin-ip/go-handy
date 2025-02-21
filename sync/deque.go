@@ -6,7 +6,7 @@ import (
 	"github.com/kevin-ip/go-handy/collection"
 )
 
-// ConcurrentDeque is a queue backed by two internal queues
+// ConcurrentDeque is a queue backed by two internal deques
 // so that inserting and removing an element
 // can be performed concurrently.
 type ConcurrentDeque[X comparable] struct {
