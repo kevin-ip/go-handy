@@ -113,7 +113,7 @@ func (s *sliceDeque[X]) Reverse() {
 
 func (s *sliceDeque[X]) ToSlice() []X {
 	// Return a copy to prevent mutation
-	return append([]X(nil), s.data...)
+	return append([]X{}, s.data...)
 }
 
 // Remove removes the first occurrence of an element in the deque
