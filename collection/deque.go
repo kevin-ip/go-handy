@@ -49,9 +49,6 @@ type Deque[X comparable] interface {
 
 	ToSlice() []X
 
-	// IndexOf finds the index of the first occurrence of an element in the sliceDeque.
-	IndexOf(x X) (int, bool)
-
-	// RemoveAt removes the element at a specific index
-	RemoveAt(index int) (X, bool)
+	// Remove removes the first occurrence of an element in the deque
+	Remove(x X) bool
 }

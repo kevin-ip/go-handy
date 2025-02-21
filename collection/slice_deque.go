@@ -116,23 +116,14 @@ func (s *sliceDeque[X]) ToSlice() []X {
 	return append([]X(nil), s.data...)
 }
 
-// IndexOf finds the index of the first occurrence of an element in the sliceDeque.
-func (s *sliceDeque[X]) IndexOf(x X) (int, bool) {
+// Remove removes the first occurrence of an element in the deque
+func (s *sliceDeque[X]) Remove(x X) bool {
 	for i, v := range s.data {
 		if v == x {
-			return i, true
+			s.data = append(s.data[:i], s.data[i+1:]...)
+			return true
 		}
 	}
-	return -1, false
-}
 
-// RemoveAt removes the element at a specific index
-func (s *sliceDeque[X]) RemoveAt(index int) (X, bool) {
-	if index < 0 || index >= len(s.data) {
-		var zero X
-		return zero, false
-	}
-	x := s.data[index]
-	s.data = append(s.data[:index], s.data[index+1:]...)
-	return x, true
+	return false
 }

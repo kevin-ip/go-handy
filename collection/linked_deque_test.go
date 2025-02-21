@@ -138,21 +138,6 @@ func TestLinkedDeque_Contains(t *testing.T) {
 	require.False(t, deque.Contains(3), "Deque should not contain the element 3")
 }
 
-func TestLinkedDeque_IndexOf(t *testing.T) {
-	deque := NewLinkedDeque[int]()
-	deque.Push(1)
-	deque.Push(2)
-	deque.Push(3)
-
-	index, ok := deque.IndexOf(2)
-	require.True(t, ok, "Deque should contain the element 2")
-	require.Equal(t, 1, index, "IndexOf should return the correct index for element 2")
-
-	index, ok = deque.IndexOf(4)
-	require.False(t, ok, "Deque should not contain the element 4")
-	require.Equal(t, -1, index, "IndexOf should return -1 for element 4")
-}
-
 func TestLinkedDeque_Reverse(t *testing.T) {
 	t.Run("Reverse with odd number of elements", func(t *testing.T) {
 		deque := NewLinkedDeque[int]()
@@ -260,38 +245,25 @@ func TestLinkedDeque_Size(t *testing.T) {
 }
 
 func TestLinkedDeque_RemoveAt(t *testing.T) {
-	t.Run("Remove from a Deque", func(t *testing.T) {
+	t.Run("Remove an existing value should be a success", func(t *testing.T) {
 		deque := NewLinkedDeque[int]()
 		for i := 0; i < 3; i++ {
 			deque.Push(i)
 		}
 
-		removedVal, ok := deque.RemoveAt(1)
-		require.True(t, ok, "RemoveAt should return true for valid index")
-		require.Equal(t, 1, removedVal, "RemoveAt should return the correct value")
+		ok := deque.Remove(1)
+		require.True(t, ok, "Remove should return true")
 
-		require.Equal(t, 2, deque.Size(), "Deque size should be 2 after RemoveAt")
+		require.Equal(t, 2, deque.Size(), "sliceDeque size should be 2 after RemoveAt")
 		require.Equal(t, []int{0, 2}, deque.ToSlice(), "RemoveAt should remove the correct element")
 	})
 
-	t.Run("Remove with a negative index", func(t *testing.T) {
+	t.Run("Remove an existing value should fail", func(t *testing.T) {
 		deque := NewLinkedDeque[int]()
 		for i := 0; i < 3; i++ {
 			deque.Push(i)
 		}
-		removedVal, ok := deque.RemoveAt(-1)
-		require.False(t, ok, "RemoveAt should return false for remove at")
-		require.Equal(t, 0, removedVal, "RemoveAt should return zero value")
-	})
-
-	t.Run("Remove with an invalid index", func(t *testing.T) {
-		deque := NewLinkedDeque[int]()
-		for i := 0; i < 3; i++ {
-			deque.Push(i)
-		}
-
-		removedVal, ok := deque.RemoveAt(3)
-		require.False(t, ok, "RemoveAt should return false for remove at")
-		require.Equal(t, 0, removedVal, "RemoveAt should return zero value")
+		ok := deque.Remove(-1)
+		require.False(t, ok, "Remove should return false")
 	})
 }

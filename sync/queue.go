@@ -165,16 +165,6 @@ func (q *ConcurrentQueue[X]) ToSlice() []X {
 	return append(inSlice, outSlice...)
 }
 
-// IndexOf finds the index of the first occurrence of an element in the queue.
-// returns the index of the element and a boolean of its existence
-func (q *ConcurrentQueue[X]) IndexOf(x X) (int, bool) {
-	q.fillOutDeque()
-
-	q.outLock.RLock()
-	defer q.outLock.RUnlock()
-	return q.outDeque.IndexOf(x)
-}
-
 // Remove removes the element from the queue
 // true if removed successfully, false otherwise
 func (q *ConcurrentQueue[X]) Remove(x X) bool {
@@ -188,10 +178,5 @@ func (q *ConcurrentQueue[X]) remove(deque collection.Deque[X], lock *sync.RWMute
 	lock.Lock()
 	defer lock.Unlock()
 
-	index, ok := deque.IndexOf(x)
-	if ok {
-		_, removed := deque.RemoveAt(index)
-		return removed
-	}
-	return false
+	return deque.Remove(x)
 }

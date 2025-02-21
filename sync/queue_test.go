@@ -150,21 +150,6 @@ func TestConcurrentQueue_ToSlice(t *testing.T) {
 	require.ElementsMatch(t, []int{1, 2, 3}, q.ToSlice())
 }
 
-func TestConcurrentQueue_IndexOf(t *testing.T) {
-	t.Parallel()
-	q := NewConcurrentQueue[int]()
-	q.Enqueue(1)
-	q.Enqueue(2)
-	q.Enqueue(3)
-
-	index, ok := q.IndexOf(2)
-	require.True(t, ok)
-	require.Equal(t, 1, index)
-
-	_, ok = q.IndexOf(4)
-	require.False(t, ok)
-}
-
 func TestConcurrentQueue_Remove(t *testing.T) {
 	t.Parallel()
 	t.Run("Remove an existing element", func(t *testing.T) {

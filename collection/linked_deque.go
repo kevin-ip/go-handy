@@ -168,17 +168,15 @@ func (d *LinkedDeque[X]) IndexOf(x X) (int, bool) {
 	return -1, false
 }
 
-// RemoveAt removes the element at a specific index
-func (d *LinkedDeque[X]) RemoveAt(index int) (X, bool) {
-	for i, node := 0, d.head; node != nil; i, node = i+1, node.next {
-		if i == index {
+// Remove removes the first occurrence of an element in the deque
+func (d *LinkedDeque[X]) Remove(x X) bool {
+	for node := d.head; node != nil; node = node.next {
+		if node.x == x {
 			node.prev.next = node.next
 			node.next.prev = node.prev
 			d.size -= 1
-			return node.x, true
+			return true
 		}
 	}
-
-	var zero X
-	return zero, false
+	return false
 }
