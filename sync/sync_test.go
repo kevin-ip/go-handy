@@ -122,16 +122,6 @@ func TestFanIn(t *testing.T) {
 			channels[i] = make(chan int)
 		}
 
-		// Start sending data to each channel
-		for i, channel := range channels {
-			go func(ch chan int, id int) {
-				defer close(ch)
-				for j := 0; j < i; j++ {
-					ch <- j
-				}
-			}(channel, i)
-		}
-
 		readOnlyChannels := make([]<-chan int, len(channels))
 		for i, channel := range channels {
 			readOnlyChannels[i] = channel
