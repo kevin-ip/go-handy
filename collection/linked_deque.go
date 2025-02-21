@@ -158,16 +158,6 @@ func (d *LinkedDeque[X]) ToSlice() []X {
 	return slice
 }
 
-// IndexOf finds the index of the first occurrence of an element in the deque.
-func (d *LinkedDeque[X]) IndexOf(x X) (int, bool) {
-	for i, node := 0, d.head; node != nil; i, node = i+1, node.next {
-		if node.x == x {
-			return i, true
-		}
-	}
-	return -1, false
-}
-
 // Remove removes the first occurrence of an element in the deque
 func (d *LinkedDeque[X]) Remove(x X) bool {
 	for node := d.head; node != nil; node = node.next {
