@@ -187,18 +187,10 @@ func (q *ConcurrentDeque[X]) Contains(x X) bool {
 
 // Reverse reverses the queue
 func (q *ConcurrentDeque[X]) Reverse() {
-	// acquiring both inLock and outLock to ensure
-	// no write operation is interfering the reverse
-	q.inLock.Lock()
-	defer q.inLock.Unlock()
+	q.fillOutDeque()
+
 	q.outLock.Lock()
 	defer q.outLock.Unlock()
-
-	for _, value := range q.inDeque.ToSlice() {
-		q.outDeque.Enqueue(value)
-	}
-	q.inDeque.Clear()
-
 	q.outDeque.Reverse()
 }
 
