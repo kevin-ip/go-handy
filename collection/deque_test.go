@@ -24,7 +24,7 @@ func runDequeTests(t *testing.T, newDequeFunc func() Deque[int]) {
 		{"testDeque_Front", testDeque_Front},
 		{"testDeque_Back", testDeque_Back},
 		{"testDeque_Size", testDeque_Size},
-		{"testDeque_RemoveAt", testDeque_RemoveAt},
+		{"testDeque_Remove", testDeque_Remove},
 	}
 
 	for _, testCase := range testCases {
@@ -39,8 +39,8 @@ func testDeque_Push(t *testing.T, newDequeFunc func() Deque[int]) {
 	val := 42
 	deque.Push(val)
 
-	require.False(t, deque.Empty(), "sliceDeque should not be empty after a push")
-	require.Equal(t, 1, deque.Size(), "sliceDeque size should be 1 after one push")
+	require.False(t, deque.Empty(), "deque should not be empty after a push")
+	require.Equal(t, 1, deque.Size(), "deque size should be 1 after one push")
 
 	peekVal, ok := deque.Peek()
 	require.True(t, ok, "Peek should return true for non-empty deque")
@@ -52,8 +52,8 @@ func testDeque_Enqueue(t *testing.T, newDequeFunc func() Deque[int]) {
 	val := 42
 	deque.Enqueue(val)
 
-	require.False(t, deque.Empty(), "sliceDeque should not be empty after an enqueue")
-	require.Equal(t, 1, deque.Size(), "sliceDeque size should be 1 after one enqueue")
+	require.False(t, deque.Empty(), "deque should not be empty after an enqueue")
+	require.Equal(t, 1, deque.Size(), "deque size should be 1 after one enqueue")
 
 	peekVal, ok := deque.Peek()
 	require.True(t, ok, "Peek should return true for non-empty deque")
@@ -77,7 +77,8 @@ func testDeque_Pop(t *testing.T, newDequeFunc func() Deque[int]) {
 		poppedVal, ok := deque.Pop()
 		require.True(t, ok, "Pop should return true for non-empty deque")
 		require.Equal(t, val2, poppedVal, "Pop should return the last pushed value")
-		require.Equal(t, 1, deque.Size(), "sliceDeque size should be 1 after one pop")
+		require.Equal(t, 1, deque.Size(), "deque size should be 1 after one pop")
+		require.Equal(t, []int{1}, deque.ToSlice())
 
 		peekVal, ok := deque.Peek()
 		require.True(t, ok, "Peek should return true for non-empty deque")
@@ -86,13 +87,20 @@ func testDeque_Pop(t *testing.T, newDequeFunc func() Deque[int]) {
 		poppedVal2, ok := deque.Pop()
 		require.True(t, ok, "Pop should return true for non-empty deque")
 		require.Equal(t, val1, poppedVal2, "Pop should return the last pushed value")
-		require.Equal(t, 0, deque.Size(), "sliceDeque size should be 1 after one pop")
+		require.Equal(t, 0, deque.Size(), "deque size should be 1 after one pop")
+		require.Equal(t, []int{}, deque.ToSlice())
 
 		_, ok = deque.Peek()
 		require.False(t, ok, "Peek should return false for an empty deque")
 
 		_, ok = deque.Pop()
 		require.False(t, ok, "Pop should return false for an empty deque")
+
+		_, ok = deque.Front()
+		require.False(t, ok, "Front should return false for an empty deque")
+
+		_, ok = deque.Back()
+		require.False(t, ok, "Back should return false for an empty deque")
 	})
 }
 
@@ -131,11 +139,29 @@ func testDeque_Dequeue(t *testing.T, newDequeFunc func() Deque[int]) {
 		dequeuedVal, ok := deque.Dequeue()
 		require.True(t, ok, "Dequeue should return true for non-empty deque")
 		require.Equal(t, val1, dequeuedVal, "Dequeue should return the first enqueued value")
-		require.Equal(t, 1, deque.Size(), "sliceDeque size should be 1 after one dequeue")
+		require.Equal(t, 1, deque.Size(), "deque size should be 1 after one dequeue")
+		require.Equal(t, []int{2}, deque.ToSlice())
 
 		peekVal, ok := deque.Peek()
 		require.True(t, ok, "Peek should return true for non-empty deque")
 		require.Equal(t, val2, peekVal, "Peek should return the second enqueued value after one dequeue")
+
+		dequeuedVal2, ok := deque.Dequeue()
+		require.True(t, ok, "Dequeue should return true for non-empty deque")
+		require.Equal(t, val2, dequeuedVal2, "Dequeue should return the first enqueued value")
+		require.Equal(t, []int{}, deque.ToSlice())
+
+		_, ok = deque.Peek()
+		require.False(t, ok, "Peek should return false for an empty deque")
+
+		_, ok = deque.Dequeue()
+		require.False(t, ok, "Dequeue should return false for an empty deque")
+
+		_, ok = deque.Front()
+		require.False(t, ok, "Front should return false for an empty deque")
+
+		_, ok = deque.Back()
+		require.False(t, ok, "Back should return false for an empty deque")
 	})
 }
 
@@ -145,8 +171,8 @@ func testDeque_Clear(t *testing.T, newDequeFunc func() Deque[int]) {
 	deque.Push(2)
 	deque.Clear()
 
-	require.True(t, deque.Empty(), "sliceDeque should be empty after Clear()")
-	require.Equal(t, 0, deque.Size(), "sliceDeque size should be 0 after Clear()")
+	require.True(t, deque.Empty(), "deque should be empty after Clear()")
+	require.Equal(t, 0, deque.Size(), "deque size should be 0 after Clear()")
 }
 
 func testDeque_Contains(t *testing.T, newDequeFunc func() Deque[int]) {
@@ -154,8 +180,8 @@ func testDeque_Contains(t *testing.T, newDequeFunc func() Deque[int]) {
 	deque.Push(1)
 	deque.Push(2)
 
-	require.True(t, deque.Contains(1), "sliceDeque should contain the element 1")
-	require.False(t, deque.Contains(3), "sliceDeque should not contain the element 3")
+	require.True(t, deque.Contains(1), "deque should contain the element 1")
+	require.False(t, deque.Contains(3), "deque should not contain the element 3")
 }
 
 func testDeque_Reverse(t *testing.T, newDequeFunc func() Deque[int]) {
@@ -169,7 +195,7 @@ func testDeque_Reverse(t *testing.T, newDequeFunc func() Deque[int]) {
 
 		// Check if the order is reversed
 		actual := deque.ToSlice()
-		require.EqualValues(t, []int{2, 1, 0}, actual, "sliceDeque should return reversed elements")
+		require.EqualValues(t, []int{2, 1, 0}, actual, "deque should return reversed elements")
 	})
 
 	t.Run("Reverse with even number of elements", func(t *testing.T) {
@@ -182,14 +208,14 @@ func testDeque_Reverse(t *testing.T, newDequeFunc func() Deque[int]) {
 
 		// Check if the order is reversed
 		actual := deque.ToSlice()
-		require.EqualValues(t, []int{3, 2, 1, 0}, actual, "sliceDeque should return reversed elements")
+		require.EqualValues(t, []int{3, 2, 1, 0}, actual, "deque should return reversed elements")
 	})
 
 	t.Run("Reverse with no element", func(t *testing.T) {
 		deque := newDequeFunc()
 		deque.Reverse()
 		actual := deque.ToSlice()
-		require.EqualValues(t, []int{}, actual, "sliceDeque should return reversed elements")
+		require.EqualValues(t, []int{}, actual, "deque should return reversed elements")
 	})
 }
 
@@ -252,7 +278,7 @@ func testDeque_Back(t *testing.T, newDequeFunc func() Deque[int]) {
 func testDeque_Size(t *testing.T, newDequeFunc func() Deque[int]) {
 	t.Run("Size from an empty deque should be zero", func(t *testing.T) {
 		deque := newDequeFunc()
-		require.Equal(t, 0, deque.Size(), "sliceDeque size should be 0")
+		require.Equal(t, 0, deque.Size(), "deque size should be 0")
 	})
 
 	t.Run("Size from an non-empty deque should return the count of elements", func(t *testing.T) {
@@ -260,11 +286,11 @@ func testDeque_Size(t *testing.T, newDequeFunc func() Deque[int]) {
 		for i := 0; i < 3; i++ {
 			deque.Push(i)
 		}
-		require.Equal(t, 3, deque.Size(), "sliceDeque size should be 3")
+		require.Equal(t, 3, deque.Size(), "deque size should be 3")
 	})
 }
 
-func testDeque_RemoveAt(t *testing.T, newDequeFunc func() Deque[int]) {
+func testDeque_Remove(t *testing.T, newDequeFunc func() Deque[int]) {
 	t.Run("Remove an existing value should be a success", func(t *testing.T) {
 		deque := newDequeFunc()
 		for i := 0; i < 3; i++ {
@@ -274,8 +300,31 @@ func testDeque_RemoveAt(t *testing.T, newDequeFunc func() Deque[int]) {
 		ok := deque.Remove(1)
 		require.True(t, ok, "Remove should return true")
 
-		require.Equal(t, 2, deque.Size(), "sliceDeque size should be 2 after RemoveAt")
-		require.Equal(t, []int{0, 2}, deque.ToSlice(), "RemoveAt should remove the correct element")
+		require.Equal(t, 2, deque.Size(), "deque size should be 2 after RemoveAt")
+		require.Equal(t, []int{0, 2}, deque.ToSlice())
+		deque.Reverse()
+		require.Equal(t, []int{2, 0}, deque.ToSlice())
+
+		ok = deque.Remove(0)
+		require.True(t, ok, "Remove should return true")
+		require.Equal(t, []int{2}, deque.ToSlice())
+		deque.Reverse()
+		require.Equal(t, []int{2}, deque.ToSlice())
+
+		ok = deque.Remove(2)
+		require.True(t, ok, "Remove should return true")
+		require.Equal(t, []int{}, deque.ToSlice())
+		deque.Reverse()
+		require.Equal(t, []int{}, deque.ToSlice())
+
+		ok = deque.Remove(4)
+		require.False(t, ok, "Remove should return false for an empty deque")
+
+		_, ok = deque.Front()
+		require.False(t, ok, "Front should return false for an empty deque")
+
+		_, ok = deque.Back()
+		require.False(t, ok, "Back should return false for an empty deque")
 	})
 
 	t.Run("Remove an existing value should fail", func(t *testing.T) {

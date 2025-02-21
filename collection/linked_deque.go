@@ -46,6 +46,8 @@ func (d *LinkedDeque[X]) Pop() (X, bool) {
 		d.last = node.prev
 		d.last.next = nil
 	} else {
+		// node is the back element in the deque
+		d.head = nil
 		d.last = nil
 	}
 	d.size -= 1
@@ -84,7 +86,12 @@ func (d *LinkedDeque[X]) Dequeue() (X, bool) {
 
 	currHead := d.head
 	d.head = d.head.next
-	d.head.prev = nil
+	if d.head == nil {
+		// currHead is the last element in the deque
+		d.last = nil
+	} else {
+		d.head.prev = nil
+	}
 	d.size -= 1
 
 	return currHead.x, true
@@ -162,8 +169,18 @@ func (d *LinkedDeque[X]) ToSlice() []X {
 func (d *LinkedDeque[X]) Remove(x X) bool {
 	for node := d.head; node != nil; node = node.next {
 		if node.x == x {
-			node.prev.next = node.next
-			node.next.prev = node.prev
+			if node.prev != nil {
+				node.prev.next = node.next
+			} else {
+				d.head = node.next
+			}
+
+			if node.next != nil {
+				node.next.prev = node.prev
+			} else {
+				d.last = node.prev
+			}
+
 			d.size -= 1
 			return true
 		}
