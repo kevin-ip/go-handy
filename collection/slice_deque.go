@@ -72,7 +72,7 @@ func (s *sliceDeque[X]) Front() (X, bool) {
 	return s.data[0], true
 }
 
-// Front views the last element of the deque
+// Back views the last element of the deque
 func (s *sliceDeque[X]) Back() (X, bool) {
 	return s.Peek()
 }

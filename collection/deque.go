@@ -27,7 +27,7 @@ type Deque[X comparable] interface {
 	// Front views the first element of the deque
 	Front() (X, bool)
 
-	// Front views the last element of the deque
+	// Back views the last element of the deque
 	Back() (X, bool)
 
 	// Others
