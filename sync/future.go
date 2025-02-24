@@ -21,7 +21,7 @@ func NewFuture[T any](fn func() (T, error)) *Future[T] {
 	)
 }
 
-// NewFutureWithContext runs a function asynchronously and returns a Future.
+// NewFutureWithContext runs a function with context asynchronously and returns a Future.
 func NewFutureWithContext[T any](
 	ctx context.Context,
 	fn func(ctx context.Context) (T, error),
