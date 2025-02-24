@@ -38,6 +38,7 @@ func NewFutureWithContext[T any](
 		default:
 			f.result, f.err = fn(ctx)
 			close(f.done)
+			return
 		}
 	}()
 
