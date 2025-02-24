@@ -186,6 +186,7 @@ func TestFutureWithContext_ZeroValue(t *testing.T) {
 
 func TestFutureWithContext_CancelImmediately(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
+	// cancel immediately
 	cancel()
 
 	f := NewFutureWithContext(ctx, func(ctx context.Context) (int, error) {
@@ -193,6 +194,6 @@ func TestFutureWithContext_CancelImmediately(t *testing.T) {
 	})
 
 	result, err := f.Get()
-	require.Error(t, err)
+	require.ErrorContains(t, err, "context canceled")
 	require.Equal(t, 0, result)
 }
