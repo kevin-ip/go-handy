@@ -15,7 +15,7 @@ type Future[T any] struct {
 func NewFuture[T any](fn func() (T, error)) *Future[T] {
 	return NewFutureWithContext(
 		context.Background(),
-		func(ctx context.Context) (T, error) {
+		func(_ context.Context) (T, error) {
 			return fn()
 		},
 	)
