@@ -2,6 +2,7 @@ package sync
 
 import (
 	"context"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -63,6 +64,7 @@ func TestWorkerPool_Submit(t *testing.T) {
 
 func TestWorkerPool_Close(t *testing.T) {
 	t.Run("all tasks should be completed after close", func(t *testing.T) {
+		t.Parallel()
 		ctx := context.Background()
 		counter := 5
 		pool := NewWorkerPool(ctx, 2, counter)
@@ -82,13 +84,23 @@ func TestWorkerPool_Close(t *testing.T) {
 	})
 
 	t.Run("closing multiple times should be fine", func(t *testing.T) {
+		t.Parallel()
 		ctx := context.Background()
 		pool := NewWorkerPool(ctx, 2, 2)
 
-		for i := 0; i < 5; i++ {
-			pool.Close()
-			require.True(t, pool.IsClosed())
+		closeCount := 5
+		wg := &sync.WaitGroup{}
+		wg.Add(closeCount)
+		for i := 0; i < closeCount; i++ {
+			go func() {
+				defer wg.Done()
+				pool.Close()
+				require.True(t, pool.IsClosed())
+			}()
 		}
+
+		wg.Wait()
+		require.True(t, pool.IsClosed())
 	})
 }
 

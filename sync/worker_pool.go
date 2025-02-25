@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"sync"
-	"sync/atomic"
 )
 
 type Task func()
@@ -17,8 +16,8 @@ type WorkerPool struct {
 	wg         sync.WaitGroup
 	ctx        context.Context
 	cancelFunc context.CancelFunc
-	// 0 is false, 1 is true
-	isClosed int32
+	isClosed   bool
+	lock       sync.RWMutex
 }
 
 // NewWorkerPool creates a worker pool.
@@ -59,7 +58,7 @@ func (p *WorkerPool) start(numWorkers int) {
 // Client can retry some time later or report an error.
 // If the pool is closed, Submit returns an error.
 func (p *WorkerPool) Submit(task Task) error {
-	if atomic.LoadInt32(&p.isClosed) == 1 {
+	if p.IsClosed() {
 		return errors.New("worker pool has been closed")
 	}
 
@@ -77,7 +76,9 @@ func (p *WorkerPool) Submit(task Task) error {
 
 // IsClosed returns whether this pool is closed
 func (p *WorkerPool) IsClosed() bool {
-	return atomic.LoadInt32(&p.isClosed) == 1
+	p.lock.RLock()
+	defer p.lock.RUnlock()
+	return p.isClosed
 }
 
 // Close closes the worker pool while waiting for the tasks
@@ -104,7 +105,14 @@ func (p *WorkerPool) close() bool {
 		return false
 	}
 
-	atomic.StoreInt32(&p.isClosed, 1)
+	p.lock.Lock()
+	defer p.lock.Unlock()
+
+	if p.isClosed {
+		return false
+	}
+
+	p.isClosed = true
 	close(p.tasks)
 	return true
 }
