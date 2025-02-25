@@ -127,3 +127,87 @@ func TestWorkerPool_IsClosed(t *testing.T) {
 	pool.Close()
 	require.True(t, pool.IsClosed())
 }
+
+func TestWorkerPool_Resize(t *testing.T) {
+	t.Run("increase should create more workers", func(t *testing.T) {
+		t.Parallel()
+		taskBuffer := 5
+		ctx := context.Background()
+		pool := NewWorkerPool(ctx, 2, taskBuffer)
+		defer pool.Close()
+
+		require.Equal(t, 2, pool.Workers())
+
+		wg := &sync.WaitGroup{}
+		var executed int32
+
+		wg.Add(taskBuffer)
+		for i := 0; i < taskBuffer; i++ {
+			index := i
+			err := pool.Submit(func() {
+				defer wg.Done()
+				time.Sleep((time.Duration(index) * 10) * time.Millisecond)
+				atomic.AddInt32(&executed, 1)
+			})
+			require.NoError(t, err)
+		}
+
+		go func() {
+			// keep increasing the pool size
+			for i := 10; i < 20; i++ {
+				err := pool.Resize(i)
+				require.NoError(t, err)
+				require.Equal(t, i, pool.Workers())
+			}
+		}()
+
+		wg.Wait()
+		require.Equal(t, int32(taskBuffer), atomic.LoadInt32(&executed), "All tasks should execute during resize")
+	})
+
+	t.Run("decrease should create stop some workers", func(t *testing.T) {
+		t.Parallel()
+		taskBuffer := 10
+		ctx := context.Background()
+		pool := NewWorkerPool(ctx, 10, taskBuffer)
+		defer pool.Close()
+
+		require.Equal(t, 10, pool.Workers())
+
+		wg := &sync.WaitGroup{}
+		var executed int32
+
+		wg.Add(taskBuffer)
+		for i := 0; i < taskBuffer; i++ {
+			index := i
+			err := pool.Submit(func() {
+				defer wg.Done()
+				time.Sleep((time.Duration(index) * 10) * time.Millisecond)
+				atomic.AddInt32(&executed, 1)
+			})
+			require.NoError(t, err)
+		}
+
+		go func() {
+			// keep decreasing the pool size
+			for i := 9; i > 2; i-- {
+				err := pool.Resize(i)
+				require.NoError(t, err)
+				require.Equal(t, i, pool.Workers())
+			}
+		}()
+
+		wg.Wait()
+		require.Equal(t, int32(taskBuffer), atomic.LoadInt32(&executed), "All tasks should execute during resize")
+	})
+
+	t.Run("resize after close should return an error", func(t *testing.T) {
+		t.Parallel()
+		ctx := context.Background()
+		pool := NewWorkerPool(ctx, 2, 5)
+		pool.Close()
+
+		err := pool.Resize(10)
+		require.ErrorContains(t, err, "worker pool has been closed")
+	})
+}

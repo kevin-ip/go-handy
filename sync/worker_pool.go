@@ -18,6 +18,8 @@ type WorkerPool struct {
 	cancelFunc context.CancelFunc
 	isClosed   bool
 	lock       sync.RWMutex
+	numWorkers int
+	doneChan   chan struct{}
 }
 
 // NewWorkerPool creates a worker pool.
@@ -28,6 +30,8 @@ func NewWorkerPool(ctx context.Context, numWorkers int, taskBuffer int) *WorkerP
 		tasks:      make(chan Task, taskBuffer),
 		ctx:        ctx,
 		cancelFunc: cancel,
+		numWorkers: numWorkers,
+		doneChan:   make(chan struct{}, numWorkers),
 	}
 	pool.start(numWorkers)
 	return pool
@@ -36,20 +40,24 @@ func NewWorkerPool(ctx context.Context, numWorkers int, taskBuffer int) *WorkerP
 // start kicks off the fixed number of worker goroutines.
 func (p *WorkerPool) start(numWorkers int) {
 	for i := 0; i < numWorkers; i++ {
-		go func() {
-			for {
-				select {
-				case <-p.ctx.Done():
-					return
-				case task, ok := <-p.tasks:
-					if !ok {
-						return
-					}
-					defer p.wg.Done()
-					task()
-				}
+		go p.worker()
+	}
+}
+
+func (p *WorkerPool) worker() {
+	for {
+		select {
+		case <-p.ctx.Done():
+			return
+		case <-p.doneChan:
+			return
+		case task, ok := <-p.tasks:
+			if !ok {
+				return
 			}
-		}()
+			defer p.wg.Done()
+			task()
+		}
 	}
 }
 
@@ -72,6 +80,39 @@ func (p *WorkerPool) Submit(task Task) error {
 		p.wg.Done()
 		return errors.New("task queue is full")
 	}
+}
+
+func (p *WorkerPool) Resize(numWorkers int) error {
+	if p.IsClosed() {
+		return errors.New("worker pool has been closed")
+	}
+
+	p.lock.Lock()
+	defer p.lock.Unlock()
+	if p.isClosed {
+		return errors.New("worker pool has been closed")
+	}
+
+	if p.numWorkers < numWorkers {
+		// increase worker go-routines
+		for i := 0; i < (numWorkers - p.numWorkers); i++ {
+			go p.worker()
+		}
+	} else if p.numWorkers > numWorkers {
+		// decrease worker go-routines
+		for i := 0; i < (p.numWorkers - numWorkers); i++ {
+			p.doneChan <- struct{}{}
+		}
+	}
+
+	p.numWorkers = numWorkers
+	return nil
+}
+
+func (p *WorkerPool) Workers() int {
+	p.lock.RLock()
+	defer p.lock.RUnlock()
+	return p.numWorkers
 }
 
 // IsClosed returns whether this pool is closed
