@@ -17,7 +17,6 @@ type WorkerPool struct {
 	wg         sync.WaitGroup
 	ctx        context.Context
 	cancelFunc context.CancelFunc
-	numWorkers int
 	// 0 is false, 1 is true
 	isClosed int32
 }
@@ -28,17 +27,16 @@ func NewWorkerPool(ctx context.Context, numWorkers int, taskBuffer int) *WorkerP
 
 	pool := &WorkerPool{
 		tasks:      make(chan Task, taskBuffer),
-		numWorkers: numWorkers,
 		ctx:        ctx,
 		cancelFunc: cancel,
 	}
-	pool.start()
+	pool.start(numWorkers)
 	return pool
 }
 
 // start kicks off the fixed number of worker goroutines.
-func (p *WorkerPool) start() {
-	for i := 0; i < p.numWorkers; i++ {
+func (p *WorkerPool) start(numWorkers int) {
+	for i := 0; i < numWorkers; i++ {
 		go func() {
 			for {
 				select {
