@@ -51,22 +51,34 @@ func TestWorkerPool_Submit_FullQueue(t *testing.T) {
 }
 
 func TestWorkerPool_Close(t *testing.T) {
-	ctx := context.Background()
-	counter := 5
-	pool := NewWorkerPool(ctx, 2, counter)
-	var executed int32
+	t.Run("all tasks should be completed after close", func(t *testing.T) {
+		ctx := context.Background()
+		counter := 5
+		pool := NewWorkerPool(ctx, 2, counter)
+		var executed int32
 
-	for i := 0; i < counter; i++ {
-		index := i
-		err := pool.Submit(func() {
-			time.Sleep((time.Duration(index) * 10) * time.Millisecond)
-			atomic.AddInt32(&executed, 1)
-		})
-		require.NoError(t, err)
-	}
+		for i := 0; i < counter; i++ {
+			index := i
+			err := pool.Submit(func() {
+				time.Sleep((time.Duration(index) * 10) * time.Millisecond)
+				atomic.AddInt32(&executed, 1)
+			})
+			require.NoError(t, err)
+		}
 
-	pool.Close()
-	require.Equal(t, int32(counter), atomic.LoadInt32(&executed), "All tasks should execute before close")
+		pool.Close()
+		require.Equal(t, int32(counter), atomic.LoadInt32(&executed), "All tasks should execute before close")
+	})
+
+	t.Run("closing multiple times should be fine", func(t *testing.T) {
+		ctx := context.Background()
+		pool := NewWorkerPool(ctx, 2, 2)
+
+		for i := 0; i < 5; i++ {
+			pool.Close()
+			require.True(t, pool.IsClosed())
+		}
+	})
 }
 
 func TestWorkerPool_CloseImmediately(t *testing.T) {

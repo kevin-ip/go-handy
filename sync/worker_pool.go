@@ -41,7 +41,6 @@ func (p *WorkerPool) start(numWorkers int) {
 			for {
 				select {
 				case <-p.ctx.Done():
-					p.Close()
 					return
 				case task, ok := <-p.tasks:
 					if !ok {
