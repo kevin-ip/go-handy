@@ -39,6 +39,29 @@ func TestArrayBinaryTree_InorderTraversal(t *testing.T) {
 	})
 }
 
+func TestArrayBinaryTree_LevelOrderTraversal(t *testing.T) {
+	t.Run("traverse an empty tree", func(t *testing.T) {
+		binaryTree := NewArrayBinaryTree[int]()
+		require.Equal(t, []int{}, binaryTree.LevelOrderTraversal())
+	})
+
+	t.Run("traverse a tree", func(t *testing.T) {
+		binaryTree := NewArrayBinaryTree[int]()
+		//         0
+		//       /    \
+		//      1      2
+		//    /   \   / \
+		//   3     4 5   6
+		//  / \   /
+		// 7   8 9
+		for i := 0; i < 10; i++ {
+			binaryTree.Insert(i)
+		}
+
+		require.Equal(t, 10, binaryTree.Size())
+		require.Equal(t, []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, binaryTree.LevelOrderTraversal())
+	})
+}
 func TestArrayBinaryTree_PreorderTraversal(t *testing.T) {
 	t.Run("traverse an empty tree", func(t *testing.T) {
 		binaryTree := NewArrayBinaryTree[int]()

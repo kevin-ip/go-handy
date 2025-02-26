@@ -12,7 +12,39 @@ type BinaryTree[X cmp.Ordered] interface {
 	// Size returns the total elements in the binary tree
 	Size() int
 
+	// InorderTraversal
+	// Given the tree below, it returns 3, 1, 4, 0, 5, 2
+	//         0
+	//       /    \
+	//      1      2
+	//    /   \   /
+	//   3     4 5
 	InorderTraversal() []X
+
+	// LevelOrderTraversal
+	// Given the tree below, it returns 0, 1, 2, 3, 4, 5
+	//         0
+	//       /    \
+	//      1      2
+	//    /   \   /
+	//   3     4 5
+	LevelOrderTraversal() []X
+
+	// PreorderTraversal
+	// Given the tree below, it returns 0, 1, 3, 4, 2, 5
+	//         0
+	//       /    \
+	//      1      2
+	//    /   \   /
+	//   3     4 5
 	PreorderTraversal() []X
+
+	// PostorderTraversal
+	// Given the tree below, it returns 3, 4, 1, 5, 2, 0
+	//         0
+	//       /    \
+	//      1      2
+	//    /   \   /
+	//   3     4 5
 	PostorderTraversal() []X
 }

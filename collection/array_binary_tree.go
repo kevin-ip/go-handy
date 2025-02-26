@@ -85,6 +85,24 @@ func (a *ArrayBinaryTree[X]) inorderTraversal(index int) []X {
 	return result
 }
 
+func (a *ArrayBinaryTree[X]) LevelOrderTraversal() []X {
+	deque := NewSliceDeque[int]()
+	deque.Enqueue(0)
+
+	result := []X{}
+	for !deque.Empty() {
+		index, ok := deque.Dequeue()
+		if !ok || index >= cap(a.tree) || a.tree[index] == nil {
+			continue
+		}
+
+		result = append(result, *a.tree[index])
+		deque.Enqueue(a.leftIndex(index))
+		deque.Enqueue(a.rightIndex(index))
+	}
+	return result
+}
+
 func (a *ArrayBinaryTree[X]) PreorderTraversal() []X {
 	return a.preorderTraversal(0)
 }
